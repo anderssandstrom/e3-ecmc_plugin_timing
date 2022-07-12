@@ -1,0 +1,3 @@
+[submodule "ecmc_plugin_timing"]
+	path = ecmc_plugin_timing
+	url = https://github.com/anderssandstrom/ecmc_plugin_timing.git
