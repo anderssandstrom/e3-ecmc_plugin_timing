@@ -47,12 +47,12 @@ ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOut
 
 
 ##############################################################################
-require ecmc_plugin_timing master  # te get access to db file..
+#require ecmc_plugin_timing master  # te get access to db file..
 
 
 ########################################################################s######
 ## Load plugin: FFT 
-epicsEnvSet(ECMC_PLUGIN_FILNAME,"/home/anderssandstrom/sources/e3-ecmc_plugin_timing/cellMods/base-7.0.6.1/require-4.0.0/ecmc_plugin_timing/master/lib/${EPICS_HOST_ARCH=linux-x86_64}/libecmc_plugin_timing.so")
+epicsEnvSet(ECMC_PLUGIN_FILNAME,"/home/anderssandstrom/sources/e3-ecmc/cellMods/base-7.0.6.1/require-4.0.0/ecmc_plugin_timing/master/lib/${EPICS_HOST_ARCH=linux-x86_64}/libecmc_plugin_timing.so")
 epicsEnvSet(ECMC_PLUGIN_CONFIG,"DBG_PRINT=0;")
 ${SCRIPTEXEC} ${ecmccfg_DIR}loadPlugin.cmd, "PLUGIN_ID=0,FILE=${ECMC_PLUGIN_FILNAME},CONFIG='${ECMC_PLUGIN_CONFIG}', REPORT=1"
 
