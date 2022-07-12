@@ -1,0 +1,78 @@
+##############################################################################
+## Example: Configuraftion for running ecmc timing plugin
+##############################################################################
+
+## Initiation:
+epicsEnvSet("IOC" ,"$(IOC="IOC_TEST")")
+epicsEnvSet("ECMCCFG_INIT" ,"")  #Only run startup once (auto at PSI, need call at ESS), variable set to "#" in startup.cmd
+epicsEnvSet("SCRIPTEXEC" ,"$(SCRIPTEXEC="iocshLoad")")
+
+require ecmccfg v8.0.0
+
+# run module startup.cmd (only needed at ESS  PSI auto call at require)
+$(ECMCCFG_INIT)$(SCRIPTEXEC) ${ecmccfg_DIR}startup.cmd, "IOC=$(IOC),ECMC_VER=time_test"
+
+##############################################################################
+## Configure hardware:
+
+ecmcFileExist($(ecmccfg_DIR)ecmcMCU1025.cmd,1)
+$(SCRIPTEXEC) $(ecmccfg_DIR)ecmcMCU1025.cmd
+
+#Apply hardware configuration
+ecmcConfigOrDie "Cfg.EcApplyConfig(1)"
+
+# ADDITIONAL SETUP
+# Set all outputs to feed switches
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput01,1)"
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput02,1)"
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput03,1)"
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput04,1)"
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput05,1)"
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput06,1)"
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput07,1)"
+ecmcConfigOrDie "Cfg.WriteEcEntryIDString(${ECMC_EC_SLAVE_NUM_DIG_OUT},binaryOutput08,1)"
+# END of ADDITIONAL SETUP
+
+##############################################################################
+## AXIS 1
+#
+#epicsEnvSet("DEV",      "$(IOC)")
+#$(SCRIPTEXEC) ($(ecmccfg_DIR)configureAxis.cmd, CONFIG=./cfg/linear_1.ax)
+
+##############################################################################
+## AXIS 2
+#
+#epicsEnvSet("DEV",      "$(IOC)")
+#$(SCRIPTEXEC) ($(ecmccfg_DIR)configureAxis.cmd, CONFIG=./cfg/linear_2.ax)
+
+
+##############################################################################
+require ecmc_plugin_timing master  # te get access to db file..
+
+
+########################################################################s######
+## Load plugin: FFT 
+epicsEnvSet(ECMC_PLUGIN_FILNAME,"/home/anderssandstrom/sources/e3-ecmc_plugin_timing/cellMods/base-7.0.6.1/require-4.0.0/ecmc_plugin_timing/master/lib/${EPICS_HOST_ARCH=linux-x86_64}/libecmc_plugin_timing.so")
+epicsEnvSet(ECMC_PLUGIN_CONFIG,"DBG_PRINT=0;")
+${SCRIPTEXEC} ${ecmccfg_DIR}loadPlugin.cmd, "PLUGIN_ID=0,FILE=${ECMC_PLUGIN_FILNAME},CONFIG='${ECMC_PLUGIN_CONFIG}', REPORT=1"
+
+
+##############################################################################
+## PLC 0: Generate a sine wave at 10Hz
+#$(SCRIPTEXEC) $(ecmccfg_DIR)loadPLCFile.cmd, "PLC_ID=0, SAMPLE_RATE_MS=10,FILE=./plc/plc_no_ec_fft_sin.plc, PLC_MACROS='FREQ=5'")
+
+##############################################################################
+############# Configure diagnostics:
+
+# go active
+ecmcFileExist("${ecmccfg_DIR}generalDiagnostics.cmd",1)
+${SCRIPTEXEC} ${ecmccfg_DIR}generalDiagnostics.cmd ECMC_TSE=0
+ecmcFileExist("ecmcGeneral.db",1,1)
+dbLoadRecords("ecmcGeneral.db","P=${ECMC_PREFIX},PORT=${ECMC_ASYN_PORT},ADDR=0,TIMEOUT=1,T_SMP_MS=10,TSE=${ECMC_TSE=0}")
+# Nice commands for info ecmcReport <level> or asynReport <level>
+# ecmcReport 3
+
+ecmcConfigOrDie "Cfg.SetAppMode(1)"
+
+iocInit
+dbl > pvs.log

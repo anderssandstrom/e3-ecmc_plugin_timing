@@ -54,7 +54,7 @@ OPT_CXXFLAGS_YES = -O3
 
 SOURCES+=$(APPSRC_ECMC)/ecmcPluginTiming.c
 
-DBDS    += $(APPSRC_ECMC)/ecmcTiming.dbd
+#DBDS    += $(APPSRC_ECMC)/ecmcTiming.dbd
 
 db: 
 .PHONY: db 
